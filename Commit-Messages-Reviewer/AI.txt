@@ -1,0 +1,180 @@
+Prompt:
+help me build a prompt for an open router API where the AI needs to review the quality of recent commit messages. The model needs to output a rating of “excellent”, “good” or “bad” for each commit message, as well as a reasoning/brief explanation
+
+Response:
+Here is a complete, production-ready prompt template for OpenRouter (or any LLM API) that evaluates commit messages.
+
+I have structured this to force structured output (JSON) so you can parse the results programmatically, and I’ve included specific rules to prevent the AI from being too lenient.
+
+The Prompt Template
+You are a commit message reviewer. Analyze commit messages based on:
+- Clarity: Is the message clear and descriptive?
+- Convention: Does it follow conventional commit format? (feat:, fix:, docs:, etc.)
+- Scope: Is the scope of changes well described?
+- Completeness: Does it explain WHAT and WHY?
+Respond ONLY in JSON format with two fields:
+{
+    "rating": "excellent" | "good" | "bad",
+    "reasoning": "brief explanation of your rating"
+}
+
+
+Prompt:
+for a project that reviews and grades past git commits using an AI API on local and remote repos and generates an HTML file and runs on a server, what are things i should double check before submission
+
+Response:
+This is a complex project with significant security and architectural implications. Here's a comprehensive checklist organized by priority:
+
+CRITICAL - Security & Access
+API Key Management
+NEVER hardcode API keys - Use environment variables or a config file in .gitignore
+
+Ensure .env file is in .gitignore and not accidentally committed
+
+Verify API key has minimum required permissions (read-only if possible)
+
+Implement rate limiting to avoid unexpected API costs
+
+Add cost estimation before batch processing many commits
+
+Code Execution Safety
+Sanitize all commit messages before sending to AI API (prevent prompt injection)
+
+Validate that the AI response doesn't contain executable code that runs automatically
+
+If using eval() or exec() on AI output - DON'T - use safe parsing instead
+
+Escape HTML output to prevent XSS when generating the report
+
+Repository Access
+For local repos: Ensure the script only accesses explicitly specified repo paths
+
+For remote repos: Use read-only tokens or deploy keys
+
+Validate that the repo URL is properly formatted before cloning/pulling
+
+HIGH - Functional Correctness
+Git Operations
+Handle edge cases: empty repos, single commit, merge commits
+
+Test with both linear and branching histories
+
+Verify handling of binary files, large files, and submodules
+
+Check for detached HEAD state handling
+
+Ensure graceful failure if git commands fail (network issues, auth failures)
+
+AI Integration
+Timeouts for API calls (don't hang indefinitely)
+
+Retry logic with exponential backoff for transient failures
+
+Chunking/batching for repos with many commits (avoid exceeding token limits)
+
+Error handling for malformed AI responses
+
+Log which commits failed and why
+
+HTML Generation
+Validate HTML structure (use W3C validator)
+
+Ensure responsive design works on different devices
+
+Static assets (CSS, JS) are self-contained or properly linked
+
+Consider large report performance (pagination or lazy loading for 1000+ commits)
+
+MEDIUM - User Experience
+Configuration & Usability
+Provide clear CLI arguments or config file documentation
+
+Include a --help or usage message
+
+Show progress indicators for long-running operations
+
+Allow filtering (by date, author, branch, etc.)
+
+Support dry-run mode to preview what will be processed
+
+Output Quality
+Reports should include commit metadata: hash, author, date, message
+
+Clear grading rubric displayed in the HTML
+
+Sort/filter capabilities in the HTML UI
+
+Provide summary statistics (average score, distribution, top issues)
+
+LOW - Polish & Maintenance
+Code Quality
+Add type hints (Python) or appropriate type checking
+
+Write unit tests for core functions (especially git parsing)
+
+Include integration tests with small test repos
+
+Add logging with appropriate levels (DEBUG, INFO, ERROR)
+
+Document setup/installation steps clearly
+
+Server Deployment
+Ensure port conflicts are handled
+
+Verify server can run in background/daemon mode
+
+Check file permissions for writing HTML output
+
+Implement cleanup of temporary files
+
+Consider concurrent access if multiple users will use it
+
+Quick Pre-Submission Run-Through
+bash
+# 1. Security scan
+git secrets --scan  # Check for accidentally committed secrets
+grep -r "API_KEY" . --exclude-dir=.git --exclude=*.env
+
+# 2. Test with a small repo
+python your_script.py --repo /path/to/test/repo --limit 5
+
+# 3. Test with a remote repo
+python your_script.py --repo https://github.com/user/repo.git --branch main --limit 10
+
+# 4. Verify HTML opens correctly
+open report.html  # or start report.html on Windows
+
+# 5. Check for uncommitted changes
+git status
+
+# 6. Run linter
+pylint your_script.py  # or flake8
+Red Flags to Avoid
+AI API keys in the codebase
+
+Running git operations without --depth limits on large repos
+
+No timeout for AI API calls
+
+Processing thousands of commits without user confirmation
+
+No error handling for missing git binary
+
+HTML that's vulnerable to XSS from commit messages
+
+Final Checklist
+README with setup instructions and requirements
+
+requirements.txt or package.json
+
+Example config file (with dummy values)
+
+Sample output HTML for demonstration
+
+License file
+
+.gitignore properly configured
+
+No debugging code or console.log statements left in
+
+Would you like me to elaborate on any of these areas or help with specific implementation details?
